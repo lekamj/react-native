@@ -19,8 +19,20 @@
 
 @class RCTView;
 
-@interface RCTView : UIView
+@protocol RCTClippableView;
 
+@protocol RCTClippingView <NSObject>
+@property (nonatomic, assign) BOOL removeClippedSubviews;
+- (void)reclipView:(UIView<RCTClippableView> *)clippableView;
+- (CGRect)clippingRectForClippingView:(UIView<RCTClippingView> *)clippingView;
+@end
+
+@protocol RCTClippableView <NSObject>
+@property (weak, nonatomic) UIView<RCTClippingView> *reactClippingSuperview;
+@end
+
+@interface RCTView : UIView <RCTClippingView, RCTClippableView>
+  
 /**
  * Accessibility event handlers
  */
@@ -47,23 +59,6 @@
  * and associated object overheads.
  */
 @property (nonatomic, assign) NSInteger reactZIndex;
-
-/**
- * This is an optimization used to improve performance
- * for large scrolling views with many subviews, such as a
- * list or table. If set to YES, any clipped subviews will
- * be removed from the view hierarchy whenever -updateClippedSubviews
- * is called. This would typically be triggered by a scroll event
- */
-@property (nonatomic, assign) BOOL removeClippedSubviews;
-
-/**
- * Hide subviews if they are outside the view bounds.
- * This is an optimisation used predominantly with RKScrollViews
- * but it is applied recursively to all subviews that have
- * removeClippedSubviews set to YES
- */
-- (void)updateClippedSubviews;
 
 /**
  * Border radii.
